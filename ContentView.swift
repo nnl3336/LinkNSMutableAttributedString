@@ -10,23 +10,6 @@ import CoreData
 import UIKit
 
 
-
-// MARK: - SwiftUI Wrapper
-struct ContentView: UIViewControllerRepresentable {
-    @Environment(\.managedObjectContext) private var viewContext
-
-    func makeUIViewController(context: Context) -> UINavigationController {
-        let notesVC = NotesTableViewController()
-        notesVC.context = viewContext
-        let nav = UINavigationController(rootViewController: notesVC)
-        return nav
-    }
-
-    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
-        // 更新処理不要
-    }
-}
-
 // MARK: - EditViewController
 class EditViewController: UIViewController, UITextViewDelegate {
     
@@ -51,65 +34,125 @@ class EditViewController: UIViewController, UITextViewDelegate {
                                                             target: self,
                                                             action: #selector(saveTapped))
         
-        restoreContent() // <- 復元用メソッドを呼ぶ
+        loadContent()
     }
     
     /// Note から NSMutableAttributedString を復元して UITextView にセット
-    func restoreContent() {
-        guard let note = note else {
+    private func loadContent() {
+        let normalColor: UIColor = {
+            // ライト／ダークモード対応
+            if traitCollection.userInterfaceStyle == .dark {
+                return .white
+            } else {
+                return .black
+            }
+        }()
+        let linkColor = UIColor.systemBlue
+        let font = UIFont.systemFont(ofSize: 20)
+
+        let applyAttributes: (NSMutableAttributedString) -> NSMutableAttributedString = { attr in
+            // リンク検出
+            let linkedAttr = NSMutableAttributedString.withLinkDetection(from: attr)
+            
+            // 全体にフォントと通常文字色
+            linkedAttr.addAttribute(.font, value: font, range: NSRange(location: 0, length: linkedAttr.length))
+            linkedAttr.addAttribute(.foregroundColor, value: normalColor, range: NSRange(location: 0, length: linkedAttr.length))
+            
+            // リンク部分だけ色をリンク色に
+            linkedAttr.enumerateAttribute(.link, in: NSRange(location: 0, length: linkedAttr.length)) { value, range, _ in
+                if value != nil {
+                    linkedAttr.addAttribute(.foregroundColor, value: linkColor, range: range)
+                }
+            }
+            return linkedAttr
+        }
+
+        if let data = note?.mutable,
+           let attr = try? NSAttributedString(
+                data: data,
+                options: [.documentType: NSAttributedString.DocumentType.rtfd],
+                documentAttributes: nil
+           ) as? NSMutableAttributedString {
+            
+            textView.attributedText = applyAttributes(attr)
+            
+        } else if let content = note?.text, !content.isEmpty {
+            let attr = NSMutableAttributedString(string: content)
+            textView.attributedText = applyAttributes(attr)
+            
+        } else {
             textView.text = ""
-            return
+            textView.font = font
+            textView.textColor = normalColor
         }
         
-        if let data = note.content {
-            do {
-                let attr = try NSAttributedString(data: data,
-                                                  options: [.documentType: NSAttributedString.DocumentType.rtfd],
-                                                  documentAttributes: nil)
-                textView.attributedText = NSMutableAttributedString(attributedString: attr)
-            } catch {
-                print("Failed to unarchive attributed string: \(error)")
-                textView.text = note.text ?? ""
-            }
-        } else {
-            textView.text = note.text ?? ""
+        // 新規ノートならキーボードを出す
+        if note == nil {
+            // 新規作成の場合は Note を生成
+            let newNote = Note(context: context)
+            newNote.id = UUID()
+            newNote.makeDate = Date()
+            self.note = newNote
+            
+            textView.becomeFirstResponder()
         }
     }
-    
+
     @objc private func saveTapped() {
+        saveNote()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        textView.resignFirstResponder()
+        
+        // ナビゲーションで戻るときだけ保存
+        if self.isMovingFromParent {
+            saveNote()
+        }
+        
+        //view.endEditing(true)   // ← これでキーボードを閉じる
+        
+    }
+    
+    private func saveNote() {
         guard let note = note else { return }
-        
+
         let textToSave = textView.text ?? ""
-        
+
         if textToSave.isEmpty {
-            context.delete(note)
+            if context.registeredObjects.contains(note) {
+                context.delete(note)
+            }
         } else {
             note.text = textToSave
-            
             let mutableAttr = NSMutableAttributedString(string: textToSave)
             let linkedAttr = NSMutableAttributedString.withLinkDetection(from: mutableAttr)
-            
-            do {
-                note.content = try linkedAttr.data(
-                    from: NSRange(location: 0, length: linkedAttr.length),
-                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]
-                )
-            } catch {
-                print("Failed to convert attributed string to RTFD: \(error)")
-            }
-            
+            note.mutable = try? linkedAttr.data(
+                from: NSRange(location: 0, length: linkedAttr.length),
+                documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]
+            )
             if note.makeDate == nil {
                 note.makeDate = Date()
             }
         }
-        
+
         do {
             try context.save()
-            navigationController?.popViewController(animated: true)
+            //didSave = true
+            //showToast(message: "保存しました")  // 成功時もトースト
         } catch {
-            print("Failed to save note: \(error)")
+            let nsError = error as NSError
+            var message = "保存できませんでした: \(nsError.localizedDescription)"
+            if nsError.code == NSFileWriteOutOfSpaceError {
+                message = "ストレージ不足で保存できませんでした。"
+            }
+            Toast.showToast(message: message)  // 失敗時もトースト
         }
+
     }
+
 }
 
 
@@ -129,6 +172,8 @@ extension NSMutableAttributedString {
         return result
     }
 }
+
+
 
 // MARK: - NotesTableViewController
 class NotesTableViewController: UITableViewController {
@@ -165,10 +210,7 @@ class NotesTableViewController: UITableViewController {
 
     // MARK: - TableView Delegate
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let editVC = EditViewController()
-        editVC.context = context
-        editVC.note = notes[indexPath.row]
-        navigationController?.pushViewController(editVC, animated: true)
+        openEditVC(for: notes[indexPath.row])
     }
 
     // MARK: - 削除
@@ -190,22 +232,10 @@ class NotesTableViewController: UITableViewController {
 
     // MARK: - 新規作成
     @objc func addNoteTapped() {
-        let newNote = Note(context: context)
-        newNote.text = "新しいノート"
-        newNote.makeDate = Date()
-
-        do {
-            try context.save()
-            notes.append(newNote)
-            tableView.reloadData()
-
-            let editVC = EditViewController()
-            editVC.context = context
-            editVC.note = newNote
-            navigationController?.pushViewController(editVC, animated: true)
-        } catch {
-            print("Failed to save new note: \(error)")
-        }
+        
+        openEditVC(for: nil)
+        
+        //print("Failed to save new note: \(error)")
     }
 
     // MARK: - Fetch Notes
@@ -216,7 +246,35 @@ class NotesTableViewController: UITableViewController {
         tableView.reloadData()
     }
 
+    // MARK: - Helpers
+    func openEditVC(for note: Note?) {
+        let editVC = EditViewController()
+        editVC.context = context
+        editVC.note = note
+        navigationController?.pushViewController(editVC, animated: true)
+    }
+
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
+    }
+}
+
+
+
+
+
+// MARK: - SwiftUI Wrapper
+struct ContentView: UIViewControllerRepresentable {
+    @Environment(\.managedObjectContext) private var viewContext
+
+    func makeUIViewController(context: Context) -> UINavigationController {
+        let notesVC = NotesTableViewController()
+        notesVC.context = viewContext
+        let nav = UINavigationController(rootViewController: notesVC)
+        return nav
+    }
+
+    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {
+        // 更新処理不要
     }
 }

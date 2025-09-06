@@ -10,6 +10,7 @@
 		1870149D2E6C16B2004F268E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187014962E6C16B2004F268E /* ContentView.swift */; };
 		1870149E2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 187014982E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld */; };
 		1870149F2E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187014992E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift */; };
+		187014A12E6C16B2004F268E /* Utility .swift in Sources */ = {isa = PBXBuildFile; fileRef = 1870149B2E6C16B2004F268E /* Utility .swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,6 +33,7 @@
 /* Begin PBXFileReference section */
 		187014962E6C16B2004F268E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		187014992E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkNSMutableAttributedStringApp.swift; sourceTree = "<group>"; };
+		1870149B2E6C16B2004F268E /* Utility .swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utility .swift"; sourceTree = "<group>"; };
 		1870149C2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = LinkNSMutableAttributedString.xcdatamodel; sourceTree = "<group>"; };
 		187CCA2C2E6C0D0E002A3C8E /* LinkNSMutableAttributedString.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LinkNSMutableAttributedString.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		187CCA422E6C0D10002A3C8E /* LinkNSMutableAttributedStringTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LinkNSMutableAttributedStringTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +88,7 @@
 			children = (
 				187014992E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift */,
 				187014962E6C16B2004F268E /* ContentView.swift */,
+				1870149B2E6C16B2004F268E /* Utility .swift */,
 				187014982E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld */,
 				187CCA2E2E6C0D0E002A3C8E /* LinkNSMutableAttributedString */,
 				187CCA452E6C0D10002A3C8E /* LinkNSMutableAttributedStringTests */,
@@ -251,6 +254,7 @@
 				1870149D2E6C16B2004F268E /* ContentView.swift in Sources */,
 				1870149E2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld in Sources */,
 				1870149F2E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift in Sources */,
+				187014A12E6C16B2004F268E /* Utility .swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -421,7 +425,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
@@ -460,7 +464,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 16;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 15.0;
