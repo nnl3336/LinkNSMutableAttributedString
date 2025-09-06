@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1870149D2E6C16B2004F268E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187014962E6C16B2004F268E /* ContentView.swift */; };
+		1870149E2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 187014982E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld */; };
+		1870149F2E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 187014992E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		187CCA432E6C0D10002A3C8E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +30,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		187014962E6C16B2004F268E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		187014992E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinkNSMutableAttributedStringApp.swift; sourceTree = "<group>"; };
+		1870149C2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = LinkNSMutableAttributedString.xcdatamodel; sourceTree = "<group>"; };
 		187CCA2C2E6C0D0E002A3C8E /* LinkNSMutableAttributedString.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LinkNSMutableAttributedString.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		187CCA422E6C0D10002A3C8E /* LinkNSMutableAttributedStringTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LinkNSMutableAttributedStringTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		187CCA4C2E6C0D10002A3C8E /* LinkNSMutableAttributedStringUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LinkNSMutableAttributedStringUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +84,9 @@
 		187CCA232E6C0D0E002A3C8E = {
 			isa = PBXGroup;
 			children = (
+				187014992E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift */,
+				187014962E6C16B2004F268E /* ContentView.swift */,
+				187014982E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld */,
 				187CCA2E2E6C0D0E002A3C8E /* LinkNSMutableAttributedString */,
 				187CCA452E6C0D10002A3C8E /* LinkNSMutableAttributedStringTests */,
 				187CCA4F2E6C0D10002A3C8E /* LinkNSMutableAttributedStringUITests */,
@@ -236,6 +248,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1870149D2E6C16B2004F268E /* ContentView.swift in Sources */,
+				1870149E2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld in Sources */,
+				1870149F2E6C16B2004F268E /* LinkNSMutableAttributedStringApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -591,6 +606,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		187014982E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				1870149C2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodel */,
+			);
+			currentVersion = 1870149C2E6C16B2004F268E /* LinkNSMutableAttributedString.xcdatamodel */;
+			path = LinkNSMutableAttributedString.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 187CCA242E6C0D0E002A3C8E /* Project object */;
 }

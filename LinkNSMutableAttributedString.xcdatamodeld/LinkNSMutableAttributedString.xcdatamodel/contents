@@ -5,6 +5,7 @@
     </entity>
     <entity name="Note" representedClassName="Note" syncable="YES" codeGenerationType="class">
         <attribute name="content" optional="YES" attributeType="Binary"/>
-        <attribute name="title" optional="YES" attributeType="String"/>
+        <attribute name="makeDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
     </entity>
 </model>
