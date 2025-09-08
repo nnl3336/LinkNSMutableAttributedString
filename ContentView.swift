@@ -11,7 +11,7 @@ import UIKit
 
 
 // MARK: - EditViewController
-class EditViewController: UIViewController, UITextViewDelegate {
+class EditViewController: UIViewController, UITextViewDelegate, UITextPasteDelegate {
     
     var context: NSManagedObjectContext!
     var note: Note?
@@ -35,65 +35,128 @@ class EditViewController: UIViewController, UITextViewDelegate {
                                                             action: #selector(saveTapped))
         
         loadContent()
+        
+        
+        textView.pasteDelegate = self   // ← 追加
     }
+    
+    // MARK: - UITextPasteDelegate
+    func textPasteConfigurationSupporting(_ textPasteConfigurationSupporting: UITextPasteConfigurationSupporting,
+                                          transform item: UITextPasteItem) {
+            
+            let normalColor: UIColor = {
+                if traitCollection.userInterfaceStyle == .dark {
+                    return .white
+                } else {
+                    return .black
+                }
+            }()
+            let linkColor = UIColor.systemBlue
+            let font = UIFont.systemFont(ofSize: 20)
+            
+            if item.itemProvider.canLoadObject(ofClass: NSAttributedString.self) {
+                // attributedText をそのまま受け取る場合
+                item.itemProvider.loadObject(ofClass: NSAttributedString.self) { (object, error) in
+                    if let attr = object as? NSAttributedString {
+                        let mutable = NSMutableAttributedString(attributedString: attr)
+                        
+                        // リンク検出
+                        let linkedAttr = NSMutableAttributedString.withLinkDetection(from: mutable)
+                        
+                        // 全体にフォントと通常色
+                        linkedAttr.addAttribute(.font, value: font, range: NSRange(location: 0, length: linkedAttr.length))
+                        linkedAttr.addAttribute(.foregroundColor, value: normalColor, range: NSRange(location: 0, length: linkedAttr.length))
+                        
+                        // リンク部分はリンク色
+                        linkedAttr.enumerateAttribute(.link, in: NSRange(location: 0, length: linkedAttr.length)) { value, range, _ in
+                            if value != nil {
+                                linkedAttr.addAttribute(.foregroundColor, value: linkColor, range: range)
+                            }
+                        }
+                        
+                        DispatchQueue.main.async {
+                            item.setResult(attributedString: linkedAttr)
+                        }
+                    }
+                }
+            } else if item.itemProvider.canLoadObject(ofClass: String.self) {
+                // プレーンテキストをペーストした場合
+                item.itemProvider.loadObject(ofClass: String.self) { (object, error) in
+                    if let str = object as? String {
+                        let mutable = NSMutableAttributedString(string: str)
+                        let linkedAttr = NSMutableAttributedString.withLinkDetection(from: mutable)
+                        
+                        linkedAttr.addAttribute(.font, value: font, range: NSRange(location: 0, length: linkedAttr.length))
+                        linkedAttr.addAttribute(.foregroundColor, value: normalColor, range: NSRange(location: 0, length: linkedAttr.length))
+                        
+                        linkedAttr.enumerateAttribute(.link, in: NSRange(location: 0, length: linkedAttr.length)) { value, range, _ in
+                            if value != nil {
+                                linkedAttr.addAttribute(.foregroundColor, value: linkColor, range: range)
+                            }
+                        }
+                        
+                        DispatchQueue.main.async {
+                            item.setResult(attributedString: linkedAttr)
+                        }
+                    }
+                }
+            }
+        }
     
     /// Note から NSMutableAttributedString を復元して UITextView にセット
     private func loadContent() {
-        let normalColor: UIColor = {
-            // ライト／ダークモード対応
-            if traitCollection.userInterfaceStyle == .dark {
-                return .white
-            } else {
-                return .black
-            }
-        }()
         let linkColor = UIColor.systemBlue
         let font = UIFont.systemFont(ofSize: 20)
 
         let applyAttributes: (NSMutableAttributedString) -> NSMutableAttributedString = { attr in
-            // リンク検出
-            let linkedAttr = NSMutableAttributedString.withLinkDetection(from: attr)
+            // フォント
+            attr.addAttribute(.font, value: font, range: NSRange(location: 0, length: attr.length))
             
-            // 全体にフォントと通常文字色
-            linkedAttr.addAttribute(.font, value: font, range: NSRange(location: 0, length: linkedAttr.length))
-            linkedAttr.addAttribute(.foregroundColor, value: normalColor, range: NSRange(location: 0, length: linkedAttr.length))
-            
-            // リンク部分だけ色をリンク色に
-            linkedAttr.enumerateAttribute(.link, in: NSRange(location: 0, length: linkedAttr.length)) { value, range, _ in
+            // 全体文字色
+            attr.addAttribute(.foregroundColor, value: UIColor.label, range: NSRange(location: 0, length: attr.length))
+
+            // 既存リンクをリンク色に
+            attr.enumerateAttribute(.link, in: NSRange(location: 0, length: attr.length)) { value, range, _ in
                 if value != nil {
-                    linkedAttr.addAttribute(.foregroundColor, value: linkColor, range: range)
+                    attr.addAttribute(.foregroundColor, value: linkColor, range: range)
                 }
             }
-            return linkedAttr
+
+            // データ検出でリンクが無い部分にリンクを設定
+            if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) {
+                let matches = detector.matches(in: attr.string, options: [], range: NSRange(location: 0, length: attr.length))
+                for match in matches {
+                    if let url = match.url {
+                        let currentAttr = attr.attribute(.link, at: match.range.location, effectiveRange: nil)
+                        if currentAttr == nil {
+                            attr.addAttribute(.link, value: url, range: match.range)
+                            attr.addAttribute(.foregroundColor, value: linkColor, range: match.range)
+                        }
+                    }
+                }
+            }
+
+            return attr
         }
 
         if let data = note?.mutable,
-           let attr = try? NSAttributedString(
-                data: data,
-                options: [.documentType: NSAttributedString.DocumentType.rtfd],
-                documentAttributes: nil
-           ) as? NSMutableAttributedString {
-            
-            textView.attributedText = applyAttributes(attr)
-            
+           let attr = try? NSAttributedString(data: data,
+                                             options: [.documentType: NSAttributedString.DocumentType.rtfd],
+                                             documentAttributes: nil) {
+            textView.attributedText = applyAttributes(NSMutableAttributedString(attributedString: attr))
         } else if let content = note?.text, !content.isEmpty {
-            let attr = NSMutableAttributedString(string: content)
-            textView.attributedText = applyAttributes(attr)
-            
+            textView.attributedText = applyAttributes(NSMutableAttributedString(string: content))
         } else {
             textView.text = ""
             textView.font = font
-            textView.textColor = normalColor
+            textView.textColor = .label
         }
-        
-        // 新規ノートならキーボードを出す
+
         if note == nil {
-            // 新規作成の場合は Note を生成
             let newNote = Note(context: context)
             newNote.id = UUID()
             newNote.makeDate = Date()
             self.note = newNote
-            
             textView.becomeFirstResponder()
         }
     }
@@ -127,30 +190,27 @@ class EditViewController: UIViewController, UITextViewDelegate {
             }
         } else {
             note.text = textToSave
-            let mutableAttr = NSMutableAttributedString(string: textToSave)
-            let linkedAttr = NSMutableAttributedString.withLinkDetection(from: mutableAttr)
-            note.mutable = try? linkedAttr.data(
-                from: NSRange(location: 0, length: linkedAttr.length),
-                documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]
-            )
-            if note.makeDate == nil {
-                note.makeDate = Date()
+
+            // attributedText を RTFD で保存（画像もリンクも残す）
+            if let attrText = textView.attributedText {
+                note.mutable = try? attrText.data(
+                    from: NSRange(location: 0, length: attrText.length),
+                    documentAttributes: [.documentType: NSAttributedString.DocumentType.rtfd]
+                )
             }
         }
 
         do {
             try context.save()
-            //didSave = true
-            //showToast(message: "保存しました")  // 成功時もトースト
+            // 保存成功時の処理（トーストなど）
         } catch {
             let nsError = error as NSError
             var message = "保存できませんでした: \(nsError.localizedDescription)"
             if nsError.code == NSFileWriteOutOfSpaceError {
                 message = "ストレージ不足で保存できませんでした。"
             }
-            Toast.showToast(message: message)  // 失敗時もトースト
+            Toast.showToast(message: message)
         }
-
     }
 
 }
