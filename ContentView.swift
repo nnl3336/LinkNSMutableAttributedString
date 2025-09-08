@@ -141,16 +141,19 @@ class EditViewController: UIViewController, UITextViewDelegate, UITextPasteDeleg
 
         if let data = note?.mutable,
            let attr = try? NSAttributedString(data: data,
-                                             options: [.documentType: NSAttributedString.DocumentType.rtfd],
-                                             documentAttributes: nil) {
-            textView.attributedText = applyAttributes(NSMutableAttributedString(attributedString: attr))
-        } else if let content = note?.text, !content.isEmpty {
-            textView.attributedText = applyAttributes(NSMutableAttributedString(string: content))
-        } else {
-            textView.text = ""
-            textView.font = font
-            textView.textColor = .label
+                                              options: [.documentType: NSAttributedString.DocumentType.rtfd],
+                                              documentAttributes: nil) {
+            let mutableAttr = NSMutableAttributedString(attributedString: attr)
+
+            // フォントやリンクを整える
+            let applied = applyAttributes(mutableAttr)
+
+            // 画像サイズを調整
+            resizeImagesIn(applied)
+
+            textView.attributedText = applied
         }
+
 
         if note == nil {
             let newNote = Note(context: context)
